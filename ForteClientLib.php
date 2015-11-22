@@ -4,6 +4,8 @@
  * http://www.forte.net/devdocs/pdf/agi_integration.pdf.
  *
  * @author Lon Sun <lon.sun@gmail.com>
+ *
+ * Tested on PHP version(s): 5.5.30
  */
 
 namespace Forte;

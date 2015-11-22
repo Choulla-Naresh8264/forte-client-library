@@ -1,10 +1,11 @@
 <?php
 /**
- * Client library for Forte Advanced Gateway Integration APIs. See 
+ * Client library for Forte Advanced Gateway Inteface APIs. See 
  * http://www.forte.net/devdocs/pdf/agi_integration.pdf.
  *
  * @author Lon Sun <lon.sun@gmail.com>
  *
+ * Forte AGI Reference Documentation version: 3.11
  * Tested on PHP version(s): 5.5.30
  */
 

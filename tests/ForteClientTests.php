@@ -19,7 +19,8 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
     $this->assertEquals( $fc->password, self::$password );
 
     # it should point to production.
-    $this->assertEquals( $fc->getApiEndpoint(), Forte\ForteClient::PRODUCTION_ENDPOINT );
+    $this->assertEquals( $fc->getApiEndpoint(), 
+      Forte\ForteClient::PRODUCTION_ENDPOINT );
   }
 
   public function testTestClientConstructor() {
@@ -29,7 +30,22 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
     $this->assertEquals( $fc->password, self::$password );
 
     # it should point to sandbox.
-    $this->assertEquals( $fc->getApiEndpoint(), Forte\ForteTestClient::TEST_ENDPOINT );
+    $this->assertEquals( $fc->getApiEndpoint(), 
+      Forte\ForteTestClient::TEST_ENDPOINT );
+  }
+
+  public function testPreparePayload() {
+    $fc = new Forte\ForteClient( self::$mid, self::$password );
+
+    $special_chars_val = "l!@#$%1";
+    $urlencoded_val = urlencode($special_chars_val);
+    $test_payload = array("eye" => "glasses", "one" => 1, 
+      "special_chars" => $special_chars_val);
+
+    $result = $fc->preparePayload($test_payload);
+
+    $this->assertEquals( $result,
+      "eye=glasses&one=1&special_chars=$urlencoded_val");
   }
 
 }

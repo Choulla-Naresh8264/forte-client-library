@@ -62,6 +62,9 @@ class ForteClient {
   const EFT_FORCE       = 25;
   const EFT_VERIFY_ONLY = 26;
 
+  # control characters
+  const DELIMITER = "&";
+
   /*
    * Pass Forte PRODUCTION API credentials to instantiate the class.  The
    * following parameters must be passed:
@@ -103,10 +106,21 @@ class ForteClient {
    *
    * Parameters:
    *
-   *  $payload: The raw payload.
+   *  $payload: An associative array containing the raw payload.
    */
-  private function preparePayload($payload) {
+  public function preparePayload($payload) {
+    $result = "";
 
+    $idx = 0;
+    foreach($payload as $key => $val) {
+      $idx++;
+
+      $result .= "$key=" . urlencode($val);
+      
+      if($idx != count($payload)) $result .= self::DELIMITER;  
+    }
+
+    return $result;
   }
 
   /*
@@ -133,8 +147,8 @@ class ForteClient {
    *    routing_number: The bank routing number (eg 123456789).
    */
   public function processEftCredit($payload) {
-    
-
+   # TODO: add transaction code to payload
+   execute( preparePayload( $payload ) ); 
   }
 
 

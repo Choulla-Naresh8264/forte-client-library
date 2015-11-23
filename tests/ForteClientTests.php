@@ -7,17 +7,15 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
 {
   # valid test credentials
   private static $mid = "181085";
-  private static $username = "Q2Uvg3";
   private static $password = "IT7yywK01";
 
   public function setUp() {
   }
 
   public function testProductionClientConstructor() {
-    $fc = new Forte\ForteClient( self::$mid, self::$username, self::$password );
+    $fc = new Forte\ForteClient( self::$mid, self::$password );
     
     $this->assertEquals( $fc->merchant_id, self::$mid );
-    $this->assertEquals( $fc->username, self::$username );
     $this->assertEquals( $fc->password, self::$password );
 
     # it should point to production.
@@ -25,10 +23,9 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
   }
 
   public function testTestClientConstructor() {
-    $fc = new Forte\ForteClient( self::$mid, self::$username, self::$password );
+    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
     
     $this->assertEquals( $fc->merchant_id, self::$mid );
-    $this->assertEquals( $fc->username, self::$username );
     $this->assertEquals( $fc->password, self::$password );
 
     # it should point to sandbox.

@@ -45,6 +45,8 @@ class ForteClient {
   # response fields
   private $pg_merchant_data;
 
+  # other
+  public $debug = false;
   
   # API endpoints
   const PRODUCTION_ENDPOINT = 
@@ -64,6 +66,20 @@ class ForteClient {
 
   # control characters
   const DELIMITER = "&";
+
+  /*
+   * Turn debug mode on.
+   */
+  public function debugOn() {
+    $this->debug = true;
+  }
+
+  /*
+   * Turn debug mode off.
+   */
+  public function debugOff() {
+    $this->debug = false;
+  }
 
   /*
    * Pass Forte PRODUCTION API credentials to instantiate the class.  The
@@ -131,7 +147,25 @@ class ForteClient {
    *  $payload: The payload in a ready-to-send state.
    */
   private function execute($payload) {
+    $ch = curl_init();
 
+    if( $this->debug ) echo "\ncURL initialized.  Sending request...\n\n";
+
+    $c_opts = array(CURLOPT_URL => $this->api_endpoint,
+                    CURLOPT_VERBOSE => $this->debug,
+                    CURLOPT_SSL_VERIFYHOST => 0,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => $payload);
+
+    curl_setopt_array($ch, $c_opts);
+
+    $response = curl_exec($ch);
+
+    curl_close($ch);
+
+    return $response;
   }
 
   /*
@@ -147,8 +181,13 @@ class ForteClient {
    *    routing_number: The bank routing number (eg 123456789).
    */
   public function processEftCredit($payload) {
-   # TODO: add transaction code to payload
-   execute( preparePayload( $payload ) ); 
+    array_unshift( $payload, $this->merchant_id, $this->password,
+      self::EFT_CREDIT ); 
+
+    //TODO: Fix field names
+    //TODO: check for exceptions in comms layer/curl
+
+    return $this->execute( $this->preparePayload( $payload ) );
   }
 
 

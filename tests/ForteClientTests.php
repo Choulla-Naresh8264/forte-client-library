@@ -48,6 +48,39 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
       "eye=glasses&one=1&special_chars=$urlencoded_val");
   }
 
+  public function testDebugOn() {
+    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+
+    $fc->debugOn();
+
+    $this->assertTrue( $fc->debug );
+  }
+
+  public function testDebugOff() {
+    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+
+    $fc->debugOff();
+
+    $this->assertFalse( $fc->debug );
+  }
+
+  # integration test
+  public function testRunEftCredit() {
+    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+
+    $payload = array( 
+        "payment_amount" => 1.23,
+        "account_type" => "C",
+        "account_number" => "12345",
+        "routing_number" => "123456789"
+      );
+
+    $response = $fc->processEftCredit($payload);
+
+    #TODO: is this good enough?  really no exception should be thrown...
+    $this->assertTrue( !empty( $response ) );
+  }
+
 }
 
 ?>

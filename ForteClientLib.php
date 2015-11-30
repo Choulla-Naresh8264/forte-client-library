@@ -8,8 +8,10 @@
  * Forte AGI Reference Documentation version: 3.11
  * Tested on PHP version(s): 5.5.30
  */
-
 namespace Forte;
+
+
+error_reporting(-1);
 
 /*
  * This client should be used in production.  Use ForteTestClient when testing
@@ -32,7 +34,7 @@ class ForteClient {
 
   # transaction fields
   private $pg_transaction_type;
-  private $pg_total_aount;
+  private $pg_total_amount;
   private $pg_consumer_id; #use this to track your internal (not Forte) payee id
   private $pg_entered_by; #name or id of user that initiated the transaction
 
@@ -41,6 +43,10 @@ class ForteClient {
   private $ecom_payment_check_trn; #routing number
   private $ecom_payment_check_account; #back account number
   private $ecom_payment_check_account_type; #account type (savings or checking) 
+
+  # customer/agent information
+  private $ecom_billto_postal_name_first;
+  private $ecom_billto_postal_name_last;
 
   # response fields
   private $pg_merchant_data;
@@ -90,8 +96,8 @@ class ForteClient {
    *  $api_password: The forte API password.
    */
   public function __construct( $forte_merchant_id, $api_password ) {
-    $this->merchant_id = $forte_merchant_id;
-    $this->password = $api_password;
+    $this->pg_merchant_id = $forte_merchant_id;
+    $this->pg_password = $api_password;
 
     $this->api_endpoint = self::PRODUCTION_ENDPOINT;
   }
@@ -147,6 +153,8 @@ class ForteClient {
    *  $payload: The payload in a ready-to-send state.
    */
   private function execute($payload) {
+
+    //TODO: check for exceptions in comms layer/curl
     $ch = curl_init();
 
     if( $this->debug ) echo "\ncURL initialized.  Sending request...\n\n";
@@ -169,23 +177,75 @@ class ForteClient {
   }
 
   /*
-   * Run an eft credit/refund transaction.  The following parameters must be
+   * Run an eft sale transaction.  The following parameters must be
    * passed:
    *
    *  $payload: An associative array that contains all data necessary for the
-   *  requrest.  It has the following keys and values:
+   *  request.  It has the following keys and values:
    *    
    *    payment_amount: The transaction amount (eg 12.34).
    *    account_type: Savings (S) or checking (C).
    *    account_number: The bank account number (eg 1234567).
    *    routing_number: The bank routing number (eg 123456789).
+   *    payee_first_name: The first name of the person you are paying.
+   *    payee_last_name: The last name of the person you are paying.
    */
-  public function processEftCredit($payload) {
-    array_unshift( $payload, $this->merchant_id, $this->password,
-      self::EFT_CREDIT ); 
+  public function processEftSale($transaction_data) {
+    $this->pg_total_amount = $transaction_data['payment_amount'];
+    $this->ecom_payment_check_account_type = $transaction_data['account_type'];
+    $this->ecom_payment_check_account = $transaction_data['account_number'];
+    $this->ecom_payment_check_trn = $transaction_data['routing_number'];
+    $this->ecom_billto_postal_name_first = $transaction_data['payee_first_name'];
+    $this->ecom_billto_postal_name_last = $transaction_data['payee_last_name'];
 
-    //TODO: Fix field names
-    //TODO: check for exceptions in comms layer/curl
+    $payload = array(
+      "pg_merchant_id" => $this->pg_merchant_id,
+      "pg_password" => $this->pg_password,
+      "pg_transaction_type" => self::EFT_SALE,
+      "pg_total_amount" => $this->pg_total_amount,
+      "ecom_payment_check_account_type" => $this->ecom_payment_check_account_type,
+      "ecom_payment_check_account" => $this->ecom_payment_check_account,
+      "ecom_payment_check_trn" => $this->ecom_payment_check_trn,
+      "ecom_billto_postal_name_first" => $this->ecom_billto_postal_name_first,
+      "ecom_billto_postal_name_last" => $this->ecom_billto_postal_name_last
+    );
+
+    return $this->execute( $this->preparePayload( $payload ) );
+  }
+
+  /*
+   * Run an eft credit/refund transaction.  The following parameters must be
+   * passed:
+   *
+   *  $payload: An associative array that contains all data necessary for the
+   *  request.  It has the following keys and values:
+   *    
+   *    payment_amount: The transaction amount (eg 12.34).
+   *    account_type: Savings (S) or checking (C).
+   *    account_number: The bank account number (eg 1234567).
+   *    routing_number: The bank routing number (eg 123456789).
+   *    payee_first_name: The first name of the person you are paying.
+   *    payee_last_name: The last name of the person you are paying.
+   */
+  public function processEftCredit($transaction_data) {
+    $this->pg_total_amount = $transaction_data['payment_amount'];
+    $this->ecom_payment_check_account_type = $transaction_data['account_type'];
+    $this->ecom_payment_check_account = $transaction_data['account_number'];
+    $this->ecom_payment_check_trn = $transaction_data['routing_number'];
+    $this->ecom_billto_postal_name_first = $transaction_data['payee_first_name'];
+    $this->ecom_billto_postal_name_last = $transaction_data['payee_last_name'];
+
+    $payload = array(
+      "pg_merchant_id" => $this->pg_merchant_id,
+      "pg_password" => $this->pg_password,
+      "pg_transaction_type" => self::EFT_CREDIT,
+      "pg_total_amount" => $this->pg_total_amount,
+      "ecom_payment_check_account_type" => $this->ecom_payment_check_account_type,
+      "ecom_payment_check_account" => $this->ecom_payment_check_account,
+      "ecom_payment_check_trn" => $this->ecom_payment_check_trn,
+      "ecom_billto_postal_name_first" => $this->ecom_billto_postal_name_first,
+      "ecom_billto_postal_name_last" => $this->ecom_billto_postal_name_last
+    );
 
     return $this->execute( $this->preparePayload( $payload ) );
   }
@@ -198,9 +258,57 @@ class ForteClient {
 /*
  * You should be able to pass in a raw response from Forte to instantiate this
  * class.  Then you can check it to see what the result was.
+ *
+ * A Forte AGI response consists of key, value pairs delimited by newline 
+ * characters. The end of the response is indicated by the string "endofdata"
+ * on it's own line.
  */
 class ForteResponse {
+  
+  private $raw_response; //raw response from Forte
+  
+  # most commonly used response fields
+  public $type;
+  public $code;
+  public $description;
+  public $trace_number;
+  
+  /*
+   * Take a raw response from Forte and extract the info we need.  The raw
+   * response will still be available at any time.
+   *
+   * Parameters:
+   *  
+   *  $raw_response: The raw response from Forte as a string.
+   */
+  public function __construct( $raw_response ) {
+    $this->raw_response = $raw_response;
 
+    # apparently there is no such thing as a JSON object in PHP
+    $response_arr = json_decode( self::rawResponseToJson( $raw_response ), true );
+
+    $this->type = $response_arr['pg_response_type'];
+    $this->code = $response_arr['pg_response_code'];
+    $this->description = $response_arr['pg_response_description'];
+    $this->trace_number = $response_arr['pg_trace_number'];
+  }
+
+  /*
+   * Convert a raw response from Forte to JSON for easier access. Note that
+   * the "endofdata" string that appears at the end of Forte responses is
+   * dropped so that only the key/value pairs in the response are returned.
+   *
+   * Parameters:
+   *
+   *  $raw_response: Should be a raw response from Forte as a string
+   */
+  public static function rawResponseToJson( $raw_response ) {
+    $matches = array();
+
+    preg_match_all( '/(\w+)=(.+)\n/', $raw_response, $matches ); 
+
+    return json_encode( array_combine( $matches[1], $matches[2] ) );
+  }
 }
 
 /*

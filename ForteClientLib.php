@@ -32,25 +32,6 @@ class ForteClient {
   public $pg_merchant_id;
   public $pg_password;
 
-  # transaction fields
-  private $pg_transaction_type;
-  private $pg_total_amount;
-  private $pg_consumer_id; #use this to track your internal (not Forte) payee id
-  private $pg_entered_by; #name or id of user that initiated the transaction
-
-  # EFT/ACH information
-  private $pg_entry_class_code; #NACHA entry class code   
-  private $ecom_payment_check_trn; #routing number
-  private $ecom_payment_check_account; #back account number
-  private $ecom_payment_check_account_type; #account type (savings or checking) 
-
-  # customer/agent information
-  private $ecom_billto_postal_name_first;
-  private $ecom_billto_postal_name_last;
-
-  # response fields
-  private $pg_merchant_data;
-
   # other
   public $debug = false;
   
@@ -123,14 +104,14 @@ class ForteClient {
    ***************************************************************************/
 
   /*
-   * Take an associative array and return an ampersand-delimited string with 
-   * all values urlencoded.
+   * Take an associative array and, as per the Forte specs, return an ampersand-
+   * delimited string with all values urlencoded.
    *
    * Parameters:
    *
    *  $payload: An associative array containing the raw payload.
    */
-  public function preparePayload($payload) {
+  public function formatPayloadForSend($payload) {
     $result = "";
 
     $idx = 0;
@@ -173,7 +154,41 @@ class ForteClient {
 
     curl_close($ch);
 
-    return $response;
+    return new ForteResponse($response);
+  }
+
+  /*
+   * Get auth data for a request.
+   */
+  protected function authData() {
+    return array(
+      "pg_merchant_id" => $this->pg_merchant_id,
+      "pg_password" => $this->pg_password);
+  }
+
+  /*
+   * Build eft transaction data part of the payload using input from the
+   * calling program..
+   *
+   *  $payload: An associative array that contains all data necessary for the
+   *  request.  It has the following keys and values:
+   *
+   *    payment_amount: The transaction amount (eg 12.34).
+   *    account_type: Savings (S) or checking (C).
+   *    account_number: The bank account number (eg 1234567).
+   *    routing_number: The bank routing number (eg 123456789).
+   *    payee_first_name: The first name of the person you are paying.
+   *    payee_last_name: The last name of the person you are paying.
+   */
+  protected function eftData($eft_data) {
+    return array(
+      "pg_total_amount" => $eft_data['payment_amount'],
+      "ecom_payment_check_account_type" => $eft_data['account_type'],
+      "ecom_payment_check_account" => $eft_data['account_number'],
+      "ecom_payment_check_trn" => $eft_data['routing_number'],
+      "ecom_billto_postal_name_first" => $eft_data['payee_first_name'],
+      "ecom_billto_postal_name_last" => $eft_data['payee_last_name']
+    );
   }
 
   /*
@@ -181,36 +196,16 @@ class ForteClient {
    * passed:
    *
    *  $payload: An associative array that contains all data necessary for the
-   *  request.  It has the following keys and values:
+   *  request.  See the eftData() method for details.
    *    
-   *    payment_amount: The transaction amount (eg 12.34).
-   *    account_type: Savings (S) or checking (C).
-   *    account_number: The bank account number (eg 1234567).
-   *    routing_number: The bank routing number (eg 123456789).
-   *    payee_first_name: The first name of the person you are paying.
-   *    payee_last_name: The last name of the person you are paying.
    */
-  public function processEftSale($transaction_data) {
-    $this->pg_total_amount = $transaction_data['payment_amount'];
-    $this->ecom_payment_check_account_type = $transaction_data['account_type'];
-    $this->ecom_payment_check_account = $transaction_data['account_number'];
-    $this->ecom_payment_check_trn = $transaction_data['routing_number'];
-    $this->ecom_billto_postal_name_first = $transaction_data['payee_first_name'];
-    $this->ecom_billto_postal_name_last = $transaction_data['payee_last_name'];
+  public function processEftSale($tran_data) {
+    $payload = array_merge(
+      $this->authData(), 
+      array('pg_transaction_type' => self::EFT_SALE), 
+      $this->eftData($tran_data));
 
-    $payload = array(
-      "pg_merchant_id" => $this->pg_merchant_id,
-      "pg_password" => $this->pg_password,
-      "pg_transaction_type" => self::EFT_SALE,
-      "pg_total_amount" => $this->pg_total_amount,
-      "ecom_payment_check_account_type" => $this->ecom_payment_check_account_type,
-      "ecom_payment_check_account" => $this->ecom_payment_check_account,
-      "ecom_payment_check_trn" => $this->ecom_payment_check_trn,
-      "ecom_billto_postal_name_first" => $this->ecom_billto_postal_name_first,
-      "ecom_billto_postal_name_last" => $this->ecom_billto_postal_name_last
-    );
-
-    return $this->execute( $this->preparePayload( $payload ) );
+    return $this->execute( $this->formatPayloadForSend( $payload ) );
   }
 
   /*
@@ -218,36 +213,15 @@ class ForteClient {
    * passed:
    *
    *  $payload: An associative array that contains all data necessary for the
-   *  request.  It has the following keys and values:
-   *    
-   *    payment_amount: The transaction amount (eg 12.34).
-   *    account_type: Savings (S) or checking (C).
-   *    account_number: The bank account number (eg 1234567).
-   *    routing_number: The bank routing number (eg 123456789).
-   *    payee_first_name: The first name of the person you are paying.
-   *    payee_last_name: The last name of the person you are paying.
+   *  request.  See the eftData() method for details.
    */
-  public function processEftCredit($transaction_data) {
-    $this->pg_total_amount = $transaction_data['payment_amount'];
-    $this->ecom_payment_check_account_type = $transaction_data['account_type'];
-    $this->ecom_payment_check_account = $transaction_data['account_number'];
-    $this->ecom_payment_check_trn = $transaction_data['routing_number'];
-    $this->ecom_billto_postal_name_first = $transaction_data['payee_first_name'];
-    $this->ecom_billto_postal_name_last = $transaction_data['payee_last_name'];
+  public function processEftCredit($tran_data) {
+    $payload = array_merge(
+      $this->authData(), 
+      array('pg_transaction_type' => self::EFT_CREDIT), 
+      $this->eftData($tran_data));
 
-    $payload = array(
-      "pg_merchant_id" => $this->pg_merchant_id,
-      "pg_password" => $this->pg_password,
-      "pg_transaction_type" => self::EFT_CREDIT,
-      "pg_total_amount" => $this->pg_total_amount,
-      "ecom_payment_check_account_type" => $this->ecom_payment_check_account_type,
-      "ecom_payment_check_account" => $this->ecom_payment_check_account,
-      "ecom_payment_check_trn" => $this->ecom_payment_check_trn,
-      "ecom_billto_postal_name_first" => $this->ecom_billto_postal_name_first,
-      "ecom_billto_postal_name_last" => $this->ecom_billto_postal_name_last
-    );
-
-    return $this->execute( $this->preparePayload( $payload ) );
+    return $this->execute( $this->formatPayloadForSend( $payload ) );
   }
 }
 

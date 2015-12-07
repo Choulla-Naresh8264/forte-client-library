@@ -27,8 +27,9 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
 
     $response = $fc->processEftCredit($payload);
 
-    #TODO: is this good enough?  really no exception should be thrown...
-    $this->assertTrue( !empty( $response ) );
+    # We can not guarantee that these will always be successful
+    # without valid test creds
+    $this->assertFalse( $response->hasError() );
   }
 
   public function testRunEftSale() {
@@ -45,8 +46,9 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
 
     $response = $fc->processEftSale($payload);
 
-    #TODO: is this good enough?  really no exception should be thrown...
-    $this->assertTrue( !empty( $response ) );
+    # We can not guarantee that these will always be successful
+    # without valid test creds
+    $this->assertFalse( $response->hasError() );
   }
 }
 

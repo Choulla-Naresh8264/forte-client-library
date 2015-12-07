@@ -43,7 +43,7 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
     $test_payload = array("eye" => "glasses", "one" => 1, 
       "special_chars" => $special_chars_val);
 
-    $result = $fc->preparePayload($test_payload);
+    $result = $fc->formatPayloadForSend($test_payload);
 
     $this->assertEquals( $result,
       "eye=glasses&one=1&special_chars=$urlencoded_val");

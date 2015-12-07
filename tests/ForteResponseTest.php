@@ -1,10 +1,10 @@
 <?php
 
-require(__DIR__ . '/../vendor/autoload.php');
-require(__DIR__ . '/../ForteClientLib.php');
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../ForteClientLib.php';
 
 
-class ForteClientTests extends PHPUnit_Framework_TestCase
+class ForteResponseTests extends PHPUnit_Framework_TestCase
 {
 
   public function setUp() {

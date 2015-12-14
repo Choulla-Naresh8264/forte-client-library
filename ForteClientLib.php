@@ -177,8 +177,8 @@ class ForteClient {
    *    account_type: Savings (S) or checking (C).
    *    account_number: The bank account number (eg 1234567).
    *    routing_number: The bank routing number (eg 123456789).
-   *    payee_first_name: The first name of the person you are paying.
-   *    payee_last_name: The last name of the person you are paying.
+   *    client_first_name: The first name of the person you are paying.
+   *    client_last_name: The last name of the person you are paying.
    */
   protected function eftData($eft_data) {
     return array(
@@ -186,8 +186,8 @@ class ForteClient {
       "ecom_payment_check_account_type" => $eft_data['account_type'],
       "ecom_payment_check_account" => $eft_data['account_number'],
       "ecom_payment_check_trn" => $eft_data['routing_number'],
-      "ecom_billto_postal_name_first" => $eft_data['payee_first_name'],
-      "ecom_billto_postal_name_last" => $eft_data['payee_last_name']
+      "ecom_billto_postal_name_first" => $eft_data['client_first_name'],
+      "ecom_billto_postal_name_last" => $eft_data['client_last_name']
     );
   }
 

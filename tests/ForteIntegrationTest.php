@@ -21,8 +21,8 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
         "account_type" => "C",
         "account_number" => "12345",
         "routing_number" => "265473812",
-        "payee_first_name" => "Bob",
-        "payee_last_name" => "Lablaw"
+        "client_first_name" => "Bob",
+        "client_last_name" => "Lablaw"
       );
 
     $response = $fc->processEftCredit($payload);
@@ -40,8 +40,8 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
         "account_type" => "C",
         "account_number" => "12345",
         "routing_number" => "265473812",
-        "payee_first_name" => "Bob",
-        "payee_last_name" => "Lablaw"
+        "client_first_name" => "Bob",
+        "client_last_name" => "Lablaw"
       );
 
     $response = $fc->processEftSale($payload);

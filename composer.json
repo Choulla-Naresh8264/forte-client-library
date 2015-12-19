@@ -1,4 +1,6 @@
 {
+    "name": "lonsun/forte-client-library",
+    "description": "PHP client library for the Forte Advanced Gateway Interface API.",
     "require-dev": {
         "phpunit/phpunit": "4.8.*"
     }

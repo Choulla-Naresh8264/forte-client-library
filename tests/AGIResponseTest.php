@@ -1,7 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../ForteClientLib.php';
+
+use LonSun\ForteGateway\AGIResponse as AGIResponse;
 
 
 class ForteResponseTests extends PHPUnit_Framework_TestCase
@@ -18,7 +19,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       pg_trace_number=4A06A2E2-11EF-484F-AC79-682588B7013F
       endofdata";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->result, "D" );
     $this->assertEquals( $response->result_code, "U19" );
@@ -37,15 +38,15 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       endofdata";
 
     $expected_result = '{';
-    $expected_result .= '"pg_response_type":"D",'; 
-    $expected_result .= '"pg_response_code":"U19",'; 
-    $expected_result .= '"pg_total_amount":"1.23",'; 
-    $expected_result .= '"pg_response_description":"INVALID TRN",'; 
-    $expected_result .= '"pg_trace_number":"4A06A2E2-11EF-484F-AC79-682588B7013F",'; 
-    $expected_result .= '"test_error_description":"MANDITORY FIELD MISSING:pg_merchant_id,MANDITORY FIELD MISSING:ecom_billto_postal_name_first,MANDITORY FIELD MISSING:ecom_billto_postal_name_last"'; 
+    $expected_result .= '"pg_response_type":"D",';
+    $expected_result .= '"pg_response_code":"U19",';
+    $expected_result .= '"pg_total_amount":"1.23",';
+    $expected_result .= '"pg_response_description":"INVALID TRN",';
+    $expected_result .= '"pg_trace_number":"4A06A2E2-11EF-484F-AC79-682588B7013F",';
+    $expected_result .= '"test_error_description":"MANDITORY FIELD MISSING:pg_merchant_id,MANDITORY FIELD MISSING:ecom_billto_postal_name_first,MANDITORY FIELD MISSING:ecom_billto_postal_name_last"';
     $expected_result .= '}';
 
-    $this->assertEquals( Forte\ForteResponse::rawResponseToJson( $raw_response ),
+    $this->assertEquals( AGIResponse::rawResponseToJson( $raw_response ),
       $expected_result );
   }
 
@@ -59,7 +60,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       pg_trace_number=CC0D1E15-628F-46E3-A749-601FB80D1A0D
       endofdata";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->isSuccessful(), true );
 
@@ -71,7 +72,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       pg_trace_number=4A06A2E2-11EF-484F-AC79-682588B7013F
       endofdata";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->isSuccessful(), false );
   }
@@ -86,7 +87,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       pg_trace_number=CC0D1E15-628F-46E3-A749-601FB80D1A0D
       endofdata";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->hasError(), false );
 
@@ -98,7 +99,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       pg_trace_number=4A06A2E2-11EF-484F-AC79-682588B7013F
       endofdata";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->hasError(), false );
 
@@ -112,7 +113,7 @@ class ForteResponseTests extends PHPUnit_Framework_TestCase
       endofdata
       ";
 
-    $response = new Forte\ForteResponse( $raw_response );
+    $response = new AGIResponse( $raw_response );
 
     $this->assertEquals( $response->hasError(), true );
   }

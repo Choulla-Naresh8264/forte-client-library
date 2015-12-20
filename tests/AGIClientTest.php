@@ -1,7 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../ForteClientLib.php';
+
+use LonSun\ForteGateway\AGIClient as AGIClient;
+use LonSun\ForteGateway\AGITestClient as AGITestClient;
 
 
 class ForteClientTests extends PHPUnit_Framework_TestCase
@@ -14,33 +16,33 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
   }
 
   public function testProductionClientConstructor() {
-    $fc = new Forte\ForteClient( self::$mid, self::$password );
-    
+    $fc = new AGIClient( self::$mid, self::$password );
+
     $this->assertEquals( $fc->pg_merchant_id, self::$mid );
     $this->assertEquals( $fc->pg_password, self::$password );
 
     # it should point to production.
-    $this->assertEquals( $fc->getApiEndpoint(), 
-      Forte\ForteClient::PRODUCTION_ENDPOINT );
+    $this->assertEquals( $fc->getApiEndpoint(),
+      AGIClient::PRODUCTION_ENDPOINT );
   }
 
   public function testTestClientConstructor() {
-    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
-    
+    $fc = new AGITestClient( self::$mid, self::$password );
+
     $this->assertEquals( $fc->pg_merchant_id, self::$mid );
     $this->assertEquals( $fc->pg_password, self::$password );
 
     # it should point to sandbox.
-    $this->assertEquals( $fc->getApiEndpoint(), 
-      Forte\ForteTestClient::TEST_ENDPOINT );
+    $this->assertEquals( $fc->getApiEndpoint(),
+      AGITestClient::TEST_ENDPOINT );
   }
 
   public function testPreparePayload() {
-    $fc = new Forte\ForteClient( self::$mid, self::$password );
+    $fc = new AGIClient( self::$mid, self::$password );
 
     $special_chars_val = "l!@#$%1";
     $urlencoded_val = urlencode($special_chars_val);
-    $test_payload = array("eye" => "glasses", "one" => 1, 
+    $test_payload = array("eye" => "glasses", "one" => 1,
       "special_chars" => $special_chars_val);
 
     $result = $fc->formatPayloadForSend($test_payload);
@@ -50,7 +52,7 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
   }
 
   public function testDebugOn() {
-    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+    $fc = new AGITestClient( self::$mid, self::$password );
 
     $fc->debugOn();
 
@@ -58,7 +60,7 @@ class ForteClientTests extends PHPUnit_Framework_TestCase
   }
 
   public function testDebugOff() {
-    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+    $fc = new AGITestClient( self::$mid, self::$password );
 
     $fc->debugOff();
 

@@ -1,8 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../ForteClientLib.php';
 
+use LonSun\ForteGateway\AGIClient as AGIClient;
+use LonSun\ForteGateway\AGITestClient as AGITestClient;
 
 class ForteIntegrationTests extends PHPUnit_Framework_TestCase
 {
@@ -12,11 +13,11 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
 
   public function setUp() {
   }
-  
-  public function testRunEftCredit() {
-    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
 
-    $payload = array( 
+  public function testRunEftCredit() {
+    $fc = new AGITestClient( self::$mid, self::$password );
+
+    $payload = array(
         "payment_amount" => 1.23,
         "account_type" => "C",
         "account_number" => "12345",
@@ -33,9 +34,9 @@ class ForteIntegrationTests extends PHPUnit_Framework_TestCase
   }
 
   public function testRunEftSale() {
-    $fc = new Forte\ForteTestClient( self::$mid, self::$password );
+    $fc = new AGITestClient( self::$mid, self::$password );
 
-    $payload = array( 
+    $payload = array(
         "payment_amount" => 1.23,
         "account_type" => "C",
         "account_number" => "12345",

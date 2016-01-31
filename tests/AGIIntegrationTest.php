@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
 use LonSun\ForteGateway\AGIClient as AGIClient;
 use LonSun\ForteGateway\AGITestClient as AGITestClient;
 

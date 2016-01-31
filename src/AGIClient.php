@@ -1,4 +1,4 @@
-<?php namespace Lonsun\Fortegateway;
+<?php namespace LonSun\ForteGateway;
 /**
  * This is part of the client library for Forte Advanced Gateway Inteface (AGI)
  * APIs. See http://www.forte.net/devdocs/pdf/agi_integration.pdf.
